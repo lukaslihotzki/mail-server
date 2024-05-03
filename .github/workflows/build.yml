@@ -180,7 +180,6 @@ jobs:
   docker_build:
     name: Docker Build
 
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     permissions:
@@ -196,19 +195,6 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
-      - name: Log In to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{github.repository_owner}}
-          password: ${{github.token}}
-
-      - name: Log In to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{secrets.DOCKERHUB_USERNAME}}
-          password: ${{secrets.DOCKERHUB_TOKEN}}
-
       - name: Extract Metadata for Docker
         id: meta
         uses: docker/metadata-action@v4
@@ -221,11 +207,23 @@ jobs:
             type=edge,branch=main
 
       - name: Build and Push Docker Images
+        if: false
         id: build
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          push: ${{github.event_name == 'push'}}
           platforms: linux/amd64,linux/arm64
           tags: ${{steps.meta.outputs.tags}}
           labels: ${{steps.meta.outputs.labels}}
+
+      - name: Build and Push Docker Images (fdb)
+        id: build-fdb
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: false
+          platforms: linux/amd64
+          tags: ${{steps.meta.outputs.tags}}
+          labels: ${{steps.meta.outputs.labels}}
+          file: resources/docker/Dockerfile.fdb

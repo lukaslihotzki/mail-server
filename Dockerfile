@@ -36,6 +36,7 @@ COPY --from=builder /output/stalwart-mail /usr/local/bin
 COPY --from=builder /output/stalwart-cli /usr/local/bin
 COPY ./resources/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod -R 755 /usr/local/bin
+USER stalwart-mail
 CMD ["/usr/local/bin/stalwart-mail"]
 VOLUME [ "/opt/stalwart-mail" ]
 EXPOSE	443 25 587 465 143 993 4190 8080
